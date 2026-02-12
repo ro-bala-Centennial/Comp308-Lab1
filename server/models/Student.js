@@ -24,17 +24,15 @@ const studentSchema = new mongoose.Schema(
 );
 
 // Hash password before save if modified
-studentSchema.pre("save", async function (next) {
-  try {
-    if (!this.isModified("password")) return next();
-    const saltRounds = 10;
-    const salt = await bcrypt.genSalt(saltRounds);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
-  } catch (err) {
-    next(err);
-  }
+studentSchema.pre("save", async function () {
+  // Only hash if password is new or modified
+  if (!this.isModified("password")) return;
+
+  const saltRounds = 10;
+  const salt = await bcrypt.genSalt(saltRounds);
+  this.password = await bcrypt.hash(this.password, salt);
 });
+
 
 // Compare password
 studentSchema.methods.comparePassword = async function (plainPassword) {
